@@ -57,7 +57,7 @@ $matches = WebScraper::i( 'http://google.com/idk' )
 
 #### printMatches( $printPre = TRUE )
 Prints the content of $this->matches.
-$printPre variable is used to tell the library to print the contents of $this->matches inside the html tag <pre></pre> or not. By default, it does output the content inside <pre> tag.
+$printPre variable is used to tell the library to print the contents of $this->matches inside the html tag &lt;pre&rt;&lt;/pre&rt; or not. By default, it does output the content inside &lt;pre&rt; tag.
 
 #### getMatches()
 Return $this->matches array
