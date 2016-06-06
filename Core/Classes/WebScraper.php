@@ -102,6 +102,8 @@ class WebScraper
 	public function setUrl( $url )
 	{
 		$this->url = $url;
+
+		return static::$instance;
 	}
 
 	/** 
@@ -146,6 +148,8 @@ class WebScraper
 		{
 			print "Matches empty!";
 		}
+
+		return static::$instance;
 	}
 
 	/** 
