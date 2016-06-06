@@ -31,7 +31,7 @@ class WebScraper
 	/** 
 	 * @var 	string 		The HTML Content
 	 */
-	private $content = NULL;
+	private $content = '';
 
 	/** 
 	 * @var 	string 		Contains the match of a regexp
@@ -39,9 +39,19 @@ class WebScraper
 	public $matches = NULL;
 
 	/** 
+	 * @var 	string 		Contains the matched attributes
+	 */
+	public $attributes = NULL;
+
+	/** 
+	 * @var 	string 		Flag for iteration
+	 */
+	private $iteration = FALSE;
+
+	/** 
 	 * @return 	void
 	 */
-	public function __construct( $url, $quoteType=NULL )
+	public function __construct( $url=NULL, $quoteType=NULL )
 	{
 		if( defined( 'DEBUG' ) )
 		{
@@ -54,13 +64,8 @@ class WebScraper
 		}
 
 		$this->url = $url;
-		$this->content = @file_get_contents( $this->url );
 
-		if( $this->content === FALSE )
-		{
-			throw new \Exception( 'Failed to fetch content from url: '.$this->url );
-		}
-
+		// But why am I even defining it? idk... too sleepy to change.
 		if( !defined( 'QUOTE_TYPE' ) AND empty( $quoteType ) )
 		{
 			define( 'QUOTE_TYPE', '[\"\\\']' );
@@ -69,6 +74,26 @@ class WebScraper
 		{
 			define( 'QUOTE_TYPE', $quoteType );
 		}
+	}
+
+	/** 
+	 * Fetches content
+	 */
+	public function fetchContent( $url=NULL )
+	{
+		if( $url != NULL )
+			$content = @file_get_contents( $url );
+		else
+			$content = @file_get_contents( $this->url );
+
+		if( $content === FALSE )
+		{
+			echo ( 'Failed to fetch content from url: '. ( $url === NULL ) ? $this->url : $url );
+		}
+
+		$this->content .= $content;
+
+		return static::$instance;
 	}
 
 	/** 
@@ -197,6 +222,117 @@ class WebScraper
 		}
 
 		return $this->attributes;
+	}
+
+	/** 
+	 * Gets content inside a specific tag
+	 *
+	 * @param 	string
+	 * @param 	array 		key-pair values for attribute-value
+	 */
+	public function getContentInsideTag( $tag, $attributes )
+	{
+		if( empty( $tag ) )
+		{
+			return [];
+		}
+
+		$tag = preg_quote( $tag );
+		$regex = '';
+
+		if( !empty( $attributes ) )
+		{
+			foreach( $attributes AS $key => $value )
+			{
+				if( $value != '*' )
+				{
+					$value = preg_quote( $value );
+				}
+				else
+				{
+					$value = '(.*?)';
+				}
+
+				$key = preg_quote( $key );
+
+				$regex .= '\s+'.$key.'='.QUOTE_TYPE.$value.QUOTE_TYPE;
+			}
+		}
+
+		$regex = '/<'.$tag.$regex.'>(.*?)<\/'.$tag.'>/is';
+
+		preg_match_all( $regex, $this->content, $matches );
+		
+		$this->matches = $matches;
+		return static::$instance;
+	}
+
+	/** 
+	 * For converting utf-8 horrible quotes to ascii quotes
+	 */
+	public function convertToAscii( $inputEncoding=NULL )
+	{
+		$inputEncoding = ( $inputEncoding === NULL ) ? 'UTF-8' : $inputEncoding; 
+ 		$this->content = iconv( $inputEncoding, 'ASCII//TRANSLIT', $this->content );
+
+ 		return static::$instance;
+	}
+
+	/** 
+	 * For iterating over pages
+	 */
+	public function iterateOverPages( $start, $end, $function = NULL )
+	{
+		$this->iteration = TRUE;
+
+		// Initialize the iteration var
+		$i = ( $function === NULL ) ? $start : call_user_func( $function );
+
+		while( $i != $end )
+		{
+			$this->fetchContent( str_replace( '{ITERATOR_VAR}', $i, $this->url ) );
+			$i = ( $function === NULL ) ? $i+1 : call_user_func( $function );
+		}
+
+		// Fetch one last time because the while will end at the last position, so it won't be matched
+		$this->fetchContent( str_replace( '{ITERATOR_VAR}', $i, $this->url ) );
+
+		return static::$instance;
+	}
+
+	/** 
+	 * Write the matched content to a file
+	 * Be default it writes $matches[0] to file. But this can be changed via the $defaultArray parameter
+	 */
+	public function writeToFile( $filename='*', $lineNumbers=FALSE, $delimiter=PHP_EOL, $defaultArray=0 )
+	{
+		if( empty( $this->matches ) )
+		{
+			return static::$instance;
+		}
+
+		$content = '';
+		if( $lineNumbers === FALSE )
+		{
+			$content = implode( $delimiter, $this->matches[ $defaultArray ] );
+		}
+		else
+		{
+			$i = 0;
+			foreach( $this->matches[ $defaultArray ] AS $match )
+			{
+				$content .= ++$i . '. ' . $match . $delimiter;
+			}
+		}
+
+		if( $filename == '*' )
+		{
+			$filename = './scrapedContent.txt';
+		}
+
+		file_put_contents( $filename, $content );
+
+		return static::$instance;
 	}
 }
 
