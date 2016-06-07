@@ -55,6 +55,50 @@ $matches = WebScraper::i( 'http://google.com/idk' )
 		->getMatches()[1];
 ```
 
+#### getImages()
+Returns all the images in the web page.
+
+```php
+$matches = WebScraper::i( 'http://google.com/idk' )
+        ->fetchContent()
+		->convertToAscii()
+		->getImages()
+		->getMatches();
+```
+
+#### getScripts()
+Returns all the scripts (<script></script>) in the page.
+
+```php
+$matches = WebScraper::i( 'http://google.com/idk' )
+        ->fetchContent()
+		->convertToAscii()
+		->getScripts()
+		->getMatches();
+```
+
+#### getInlineScripts()
+Returns all the inline scripts in the page.
+
+```php
+$matches = WebScraper::i( 'http://google.com/idk' )
+        ->fetchContent()
+		->convertToAscii()
+		->getInlineScripts()
+		->getMatches();
+```
+
+#### getStylesheets()
+Returns all the stylesheets in the page.
+
+```php
+$matches = WebScraper::i( 'http://google.com/idk' )
+        ->fetchContent()
+		->convertToAscii()
+		->getStylesheets()
+		->getMatches();
+```
+
 #### printMatches( $printPre = TRUE )
 Prints the content of $this->matches.
 $printPre variable is used to tell the library to print the contents of $this->matches inside the html tag &lt;pre&rt;&lt;/pre&rt; or not. By default, it does output the content inside &lt;pre&rt; tag.
