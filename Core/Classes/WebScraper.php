@@ -126,7 +126,76 @@ class WebScraper
 
 		preg_match_all( '/<a\s*?(((\w+='.QUOTE_TYPE.'(.*?)'.QUOTE_TYPE.')\s*)*)>(.*?)<\/a>/is', $this->content, $matches );
 
-		$this->matches = array_filter( $matches );
+		$this->matches = $this->arrayFilter( $matches );
+
+		return static::$instance;
+	}
+
+	/** 
+	 * Gets all images in page
+	 */
+	public function getImages()
+	{
+		if( empty( $this->content ) )
+		{
+			return FALSE;
+		}
+
+		preg_match_all( '/<img\s*?(((\w+='.QUOTE_TYPE.'(.*?)'.QUOTE_TYPE.')\s*)*)\/?>/is', $this->content, $matches );
+
+		$this->matches = $this->arrayFilter( $matches );
+
+		return static::$instance;
+	}
+
+	/** 
+	 * Gets all scripts in page
+	 */
+	public function getScripts()
+	{
+		if( empty( $this->content ) )
+		{
+			return FALSE;
+		}
+
+		preg_match_all( '/<script\s*?(((\w+='.QUOTE_TYPE.'(.*?)'.QUOTE_TYPE.')\s*)*)>(.*?)<\/script>/is', $this->content, $matches );
+
+		$this->matches = $this->arrayFilter( $matches );
+
+		return static::$instance;
+	}
+
+	/** 
+	 * Gets all inline scripts in page
+	 */
+	public function getInlineScripts()
+	{
+		if( empty( $this->content ) )
+		{
+			return FALSE;
+		}
+
+		//preg_match_all( '/<script\s*?(((\w+='.QUOTE_TYPE.'(.*?)'.QUOTE_TYPE.')\s*)*)>(.+?)<\/script>/is', $this->content, $matches );
+		preg_match_all( '/<script(\s+type='.QUOTE_TYPE.'text\/javascript'.QUOTE_TYPE.')?>(.+?)<\/script>/is', $this->content, $matches );
+
+		$this->matches = $this->arrayFilter( $matches );
+
+		return static::$instance;
+	}
+
+	/** 
+	 * Gets all stylesheets in page
+	 */
+	public function getStylesheets()
+	{
+		if( empty( $this->content ) )
+		{
+			return FALSE;
+		}
+
+		preg_match_all( '/<link\s*?(((\w+='.QUOTE_TYPE.'(.*?)'.QUOTE_TYPE.')\s*)*)\/?>/is', $this->content, $matches );
+
+		$this->matches = $this->arrayFilter( $matches );
 
 		return static::$instance;
 	}
@@ -337,6 +406,22 @@ class WebScraper
 		file_put_contents( $filename, $content );
 
 		return static::$instance;
+	}
+
+	/** 
+	 * Recursive Array Filter
+	 */
+	public function arrayFilter( $array )
+	{
+	    foreach( $array AS &$value ) 
+	    { 
+			if( is_array( $value ) ) 
+			{ 
+				$value = $this->arrayFilter( $value ); 
+			} 
+	    } 
+
+	    return array_filter( $array ); 
 	}
 }
 
