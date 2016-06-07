@@ -67,7 +67,7 @@ $matches = WebScraper::i( 'http://google.com/idk' )
 ```
 
 #### getScripts()
-Returns all the scripts (<script></script>) in the page.
+Returns all the scripts (&lt;script&rt;&lt;/script&rt;) in the page.
 
 ```php
 $matches = WebScraper::i( 'http://google.com/idk' )
